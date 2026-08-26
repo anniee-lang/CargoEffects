@@ -1,0 +1,9 @@
+{
+    "Id": "CargoEffects",
+    "DisplayName": "CargoEffects",
+    "Author": "BorING",
+    "Version": "1.0.0",
+    "AssemblyName": "CargoEffects.dll",
+    "EntryMethod": "CargoEffects.Main.Load",
+    "ManagerVersion": "0.27.3"
+}
