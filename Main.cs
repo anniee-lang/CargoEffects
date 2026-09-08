@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,6 +14,7 @@ namespace CargoEffects
         public static bool Enabled = true;
         public static ModConfig Config;
         public static Dictionary<CargoType, CargoConfigEntry> TargetCargos = new Dictionary<CargoType, CargoConfigEntry>();
+        public static Dictionary<CargoType, TimerCargoConfigEntry> TimerCargos = new Dictionary<CargoType, TimerCargoConfigEntry>();
 
         private static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -38,10 +39,24 @@ namespace CargoEffects
                     }
                 }
 
+                TimerCargos.Clear();
+                foreach (var entry in Config.TimerCargos)
+                {
+                    if (Enum.TryParse<CargoType>(entry.CargoType, ignoreCase: true, out var parsed))
+                    {
+                        TimerCargos[parsed] = entry;
+                    }
+                    else
+                    {
+                        Debug.LogError($"[CargoEffects] Timer cargo entry '{entry.CargoType}' is not a valid CargoType, skipping.");
+                    }
+                }
+
                 harmony = new Harmony(modEntry.Info.Id);
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
                 CargoWatcher.Initialize();
-                DebugLog($"Loaded. Watching {TargetCargos.Count} cargo type(s): " + string.Join(", ", TargetCargos.Keys));
+                JobTimerCargoTracker.Initialize();
+                DebugLog($"Loaded. Watching {TargetCargos.Count} cargo type(s) (g-force), {TimerCargos.Count} cargo type(s) (timer, enabled={Config.UseTimerBasedDamage}).");
                 return true;
             }
             catch (Exception ex)

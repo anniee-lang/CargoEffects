@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
 using UnityEngine;
-
 namespace CargoEffects
 {
     public class CargoConfigEntry
@@ -12,7 +11,14 @@ namespace CargoEffects
         public string CargoType = "";
         public bool CanExplode = false;
     }
-
+    public class TimerCargoConfigEntry
+    {
+        public string CargoType = "";
+        public float TimerThresholdMinutes = 20f;
+        public float TimerDamageCooldown = 30f;
+        public float TimerDamagePercentPerTrigger = 0.15f;
+        public bool CanExplode = false;
+    }
     public class ModConfig
     {
         public List<CargoConfigEntry> Cargos = new List<CargoConfigEntry>
@@ -25,7 +31,7 @@ namespace CargoEffects
             new CargoConfigEntry { CargoType = "Passengers", CanExplode = false },
             new CargoConfigEntry { CargoType = "Cows", CanExplode = false },
         };
-
+        public bool UseGForceBasedDamage = false;
         public float SpeedWindowSeconds = 20f;
         public float SpeedGainThresholdKmh = 50f;
         public float SpeedLossThresholdKmh = 50f;
@@ -34,19 +40,22 @@ namespace CargoEffects
         public float FallbackFixedDamage = 50f;
         public float SampleIntervalSeconds = 0.5f;
         public float CargoWatcherCheckInterval = 2.0f;
-
         public float ExplosionHealthThreshold = 0.5f;
         public float ExplosionDamage = 10000000f;
         public float ExplosionRadius = 25f;
         public float ExplosionForce = 100f;
-
         public float StressDamageThreshold = 0.9f;
         public float StressDamageCooldown = 5f;
         public float StressDamagePercentPerTrigger = 0.20f;
-
+        public bool UseTimerBasedDamage = true;
+        public float TimerSaveIntervalSeconds = 30f;
+        public List<TimerCargoConfigEntry> TimerCargos = new List<TimerCargoConfigEntry>
+        {
+            new TimerCargoConfigEntry { CargoType = "Poultry", TimerThresholdMinutes = 20f, TimerDamageCooldown = 30f, TimerDamagePercentPerTrigger = 0.15f, CanExplode = false },
+            new TimerCargoConfigEntry { CargoType = "Pigs", TimerThresholdMinutes = 20f, TimerDamageCooldown = 30f, TimerDamagePercentPerTrigger = 0.15f, CanExplode = false },
+        };
         private static string ConfigPath =>
             Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "config.json");
-
         public static ModConfig LoadOrCreate()
         {
             try
@@ -62,7 +71,6 @@ namespace CargoEffects
                         return loaded;
                     }
                 }
-
                 var defaults = new ModConfig();
                 File.WriteAllText(path, JsonConvert.SerializeObject(defaults, Formatting.Indented));
                 Main.DebugLog($"No config found, wrote defaults to {path}");

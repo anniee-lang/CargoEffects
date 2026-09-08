@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using DV;
 
 namespace CargoEffects
@@ -29,13 +29,15 @@ namespace CargoEffects
             var allCars = CarSpawner.Instance?.AllCars;
             if (allCars == null) return;
 
+            bool gforceEnabled = Main.Config.UseGForceBasedDamage;
+
             foreach (var car in allCars)
             {
                 if (car == null || car.IsLoco) continue;
 
                 var tracker = car.GetComponent<AccelerationCargoDamage>();
 
-                if (Main.TargetCargos.TryGetValue(car.LoadedCargo, out var entry))
+                if (gforceEnabled && Main.TargetCargos.TryGetValue(car.LoadedCargo, out var entry))
                 {
                     if (tracker == null)
                     {
@@ -46,7 +48,7 @@ namespace CargoEffects
                 }
                 else if (tracker != null)
                 {
-                    Main.DebugLog($"{car.ID} no longer has a tracked cargo, removing tracker.");
+                    Main.DebugLog($"{car.ID} no longer has a tracked cargo (or g-force damage disabled), removing tracker.");
                     Destroy(tracker);
                 }
             }
